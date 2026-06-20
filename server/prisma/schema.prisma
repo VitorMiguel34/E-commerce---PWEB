@@ -10,7 +10,7 @@ model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   name      String
-  senha     String
+  password  String
   createdAt DateTime @default(now())
 }
 
