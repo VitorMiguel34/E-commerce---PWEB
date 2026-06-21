@@ -59,7 +59,7 @@ router.patch('/', auth, async (req, res, next) => {
     }
 })
 
-router.post('/', async (req, res, next) => {
+router.post('/', inverseAuth, async (req, res, next) => {
     const {name, email, password} = req.body
     let e=0
     try {
@@ -89,7 +89,7 @@ router.post('/', async (req, res, next) => {
     }
 })
 
-router.post('/login', async(req, res, next) => {
+router.post('/login', inverseAuth, async(req, res, next) => {
     const {email, password} = req.body
     try {
       const u = await prisma.user.findUnique({

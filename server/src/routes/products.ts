@@ -7,8 +7,6 @@ const router = Router();
 
 if (!secretkey) throw Error(".env: couldn't load secretkey properly.")
 
-
-
 router.get('/products/:id', async (req, res, next) => {
     if (!req.params.id) {
           try {
@@ -36,8 +34,9 @@ router.get('/products/:id', async (req, res, next) => {
 
 router.patch('/products', auth, async (req, res, next) => { 
     try {
+      const {id, sku, name, description, price, stock} = req.body
       let p = await prisma.product.findUnique({
-        where: {id:req.body.id}
+        where: {id: id}
       })
 
       if (!p) {
@@ -48,13 +47,13 @@ router.patch('/products', auth, async (req, res, next) => {
         return res.status(403).json({error: "You dont have permission to update this product."})
       }
       
-      const {sku, name, description, price} = req.body
 
       let b = new Map()
       b.set("sku", sku)
       b.set("name", name)
       b.set("description", description)
       b.set("price", price)
+      b.set("stock", stock)
       b.forEach((a,b) => {
         if (b) {
           c[a] = b
@@ -64,9 +63,9 @@ router.patch('/products', auth, async (req, res, next) => {
       let c:any = {
       }
 
-      const a = await prisma.user.update({
+      const a = await prisma.product.update({
         where: {
-        id: res.locals.v.id
+        id: id
         },
         data: c
       })
@@ -77,7 +76,7 @@ router.patch('/products', auth, async (req, res, next) => {
 })
 
 router.post('/products', auth, async (req, res, next) => {
-  const {name, description, price, sku} = req.body
+  const {name, description, price, sku, stock} = req.body
   if (Number.isNaN(price)) {
       return res.status(422).json({error: "Invalid data format."})
   }
@@ -91,7 +90,8 @@ router.post('/products', auth, async (req, res, next) => {
         name: name,
         description: description,
         price: price,
-        sku: sku
+        sku: sku,
+        stock: stock
       }
     })
   return res.json({product: a})
