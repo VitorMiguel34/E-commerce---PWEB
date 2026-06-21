@@ -7,18 +7,21 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
+  id        Int       @id @default(autoincrement())
+  email     String    @unique
   name      String
-  password  String   @default("1234")
-  createdAt DateTime @default(now())
+  password  String    @default("1234")
+  createdAt DateTime  @default(now())
+  products  Product[]
 }
 
 model Product {
   id          Int      @id @default(autoincrement())
+  owner_id    Int
   name        String
   description String?
   price       Float
   sku         String?  @unique
   createdAt   DateTime @default(now())
+  Owner       User     @relation(fields: [owner_id], references: [id])
 }

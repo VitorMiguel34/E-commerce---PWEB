@@ -1,8 +1,8 @@
 import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import apiUsersRouter from './routers/users'
-import apiProductsRouter from './routers/products'
+import apiUsersRouter from './routes/users'
+import apiProductsRouter from './routes/products'
 import prisma from './prisma';
 import cookieparser from 'cookie-parser'
 const app = express();

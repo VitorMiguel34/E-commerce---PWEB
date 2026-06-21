@@ -2,35 +2,12 @@ import { Router } from 'express';
 import prisma from '../prisma';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
+import {auth, inverseAuth} from '../auth'
 const router = Router();
 const secretkey = process.env.KEY
 
-if (!secretkey) throw ".env: secretkey didnt load properly."
+if (!secretkey) throw Error(".env: couldn't load secretkey properly.")
 
-const auth = async (req: any, res: any, next: any) => {
-    if (!req.cookies.sessiontoken) {
-        return res.status(401).json({error: "Invalid credentials."})
-    }
-    let e=0
-    try {
-        let v = jwt.verify(req.cookies.sessiontoken, secretkey)
-        e++
-        let v2 = await prisma.user.findUnique({
-            where: {
-                id: v.id
-            }
-        })
-        if (!v2) {
-            return res.status(401).json({error: "Invalid credentials; account doesn't exist."})
-        }
-        next()       
-    } catch(err) {
-        if (e === 0) {
-            return res.status(401).json({error: "Invalid session token."})
-        }
-        return res.status(500).json({error: "Internal server error."})
-    }
-}
 
 router.get('/:id', async (req, res, next) => {
   if (!req.params.id) {
@@ -63,7 +40,6 @@ router.patch('/', auth, async (req, res, next) => {
       if (password) {
         b.set("password",await bcrypt.hash(password, 10))
       }
-      let a = jwt.verify(req.cookies.sessiontoken, secretkey)
       b.forEach((a,b) => {
         if (b) {
           c[a] = b
@@ -72,15 +48,15 @@ router.patch('/', auth, async (req, res, next) => {
       let c:any = {
       }
         
-        let u = await prisma.user.update({
-          where: {
-           id: a.id
-          },
-          data: b
-        })
-          } catch(err) {
-            return res.status(500).json({error:"Internal server error"})
-        }
+      await prisma.user.update({
+        where: {
+          id: res.locals.v.id
+        },
+        data: c
+      })
+    } catch(err) {
+      return res.status(500).json({error:"Internal server error"})
+    }
 })
 
 router.post('/', async (req, res, next) => {
@@ -104,7 +80,7 @@ router.post('/', async (req, res, next) => {
         sameSite: "strict",
         maxAge: 60*60*24*3
       })
-      return res.send("User account created successfully.")
+      return res.json({user: u})
     } catch(err) {
       if (e===0) {
         return res.status(500).json({error:"Could not store password safely."})
@@ -136,4 +112,5 @@ router.post('/login', async(req, res, next) => {
       return res.status(500).json({erro: "Internal server error."})
     }
 })
+
 export default router
