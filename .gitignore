@@ -5,3 +5,4 @@ node_modules/
 server/prisma/dev.db
 .DS_Store
 dist/
+dev.db

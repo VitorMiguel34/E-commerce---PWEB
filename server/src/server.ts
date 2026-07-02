@@ -3,7 +3,6 @@ import express from 'express';
 import cors from 'cors';
 import apiUsersRouter from './routes/users'
 import apiProductsRouter from './routes/products'
-import prisma from './prisma';
 import cookieparser from 'cookie-parser'
 const app = express();
 
@@ -20,8 +19,6 @@ app.use('/api/products', apiProductsRouter)
 
 const PORT = process.env.PORT ? Number(process.env.PORT) : 6767;
 
-const server = app.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
-
-export default app;

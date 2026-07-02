@@ -7,32 +7,34 @@ const router = Router();
 
 if (!secretkey) throw Error(".env: couldn't load secretkey properly.")
 
-router.get('/products/:id', async (req, res, next) => {
-    if (!req.params.id) {
-          try {
-          const products = await prisma.product.findMany();
-          res.json(products);
-        } catch (err) {
-          next(err);
-        }
-    } else {
-    try {
-      const p = await prisma.product.findUnique({
+router.get('/', async (req,res) => {
+  try{
+    const products = await prisma.product.findMany({})
+    return res.status(200).json(products)
+  }
+  catch(err){
+    return res.status(500).json({error: "Internal server erro"})
+  }
+})
+
+router.get('/:id', async (req, res) => {
+  try{
+      const product = await prisma.user.findUnique({
         where: {
           id: parseInt(req.params.id)
-        }
+        },
       })
-      if (!p) {
-        return res.status(404).json({error: "Product not found."})
+      if (!product) {
+        return res.status(404).json({error: "Product not found"})
       }
-      return res.json(p)
-    } catch (err) {
-        next(err)
-    }
+      return res.status(200).json(product)
+  }
+  catch(err){
+    res.status(500).json({error: "Internal server error"})
   }
 });
 
-router.patch('/products', auth, async (req, res, next) => { 
+router.patch('/', auth, async (req, res) => { 
     try {
       const {id, sku, name, description, price, stock} = req.body
       let p = await prisma.product.findUnique({
@@ -54,28 +56,27 @@ router.patch('/products', auth, async (req, res, next) => {
       b.set("description", description)
       b.set("price", price)
       b.set("stock", stock)
-      b.forEach((a,b) => {
-        if (b) {
-          c[a] = b
+
+      let c:any = {}
+      b.forEach((value,key) => {
+        if (value) {
+          c[key] = value
         }
       })
 
-      let c:any = {
-      }
-
-      const a = await prisma.product.update({
+      await prisma.product.update({
         where: {
-        id: id
+          id: id
         },
         data: c
       })
-      return res.json({updated: a})
+      return res.status(200).json({message: "Successfully updated"})
   } catch(err) {
     res.status(500).json({error:"Internal server error."})
   }
 })
 
-router.post('/products', auth, async (req, res, next) => {
+router.post('/', auth, async (req, res) => {
   const {name, description, price, sku, stock} = req.body
   if (Number.isNaN(price)) {
       return res.status(422).json({error: "Invalid data format."})
@@ -94,7 +95,7 @@ router.post('/products', auth, async (req, res, next) => {
         stock: stock
       }
     })
-  return res.json({product: a})
+  return res.status(201).json({message: "Product created"})
   } catch(err) {
     return res.status(500).send("Internal server error")
   }
