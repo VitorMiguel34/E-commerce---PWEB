@@ -8,45 +8,56 @@ const secretkey = process.env.KEY
 
 if (!secretkey) throw Error(".env: couldn't load secretkey properly.")
 
-
-router.get('/:id', async (req, res, next) => {
-  if (!req.params.id) {
-      try {
-      const users = await prisma.user.findMany();
-      return res.json(users);
-      } catch (err) {
-        return next(err);
+router.get('/', async (req,res) => {
+  try{
+    const users = await prisma.user.findMany({
+      omit: {
+        password: true
       }
-  } else {
+    })
+    return res.status(200).json(users)
+  }
+  catch(err){
+    return res.status(500).json({error: "Internal server erro"})
+  }
+})
+
+router.get('/:id', async (req, res) => {
+  try{
       const u = await prisma.user.findUnique({
         where: {
           id: parseInt(req.params.id)
+        },
+        omit: {
+          password: true
         }
       })
       if (!u) {
         return res.status(404).json({error: "User not found"})
       }
-      return res.json(u)
+      return res.status(200).json(u)
+  }
+  catch(err){
+    res.status(500).json({error: "Internal server error"})
   }
 });
 
-router.patch('/', auth, async (req, res, next) => {
-    const {name, description, email, password} = req.body
+router.patch('/', auth, async (req, res) => {
+    const {name, email, password} = req.body
     let b = new Map()
     b.set("name", name)
-    b.set("description", description)
     b.set("email", email)
     try {
       if (password) {
         b.set("password",await bcrypt.hash(password, 10))
       }
-      b.forEach((a,b) => {
-        if (b) {
-          c[a] = b
+
+      let c: any = {}
+      b.forEach((value,key) => {
+        if (value) {
+          c[key] = value
         }
       })
-      let c:any = {
-      }
         
       await prisma.user.update({
         where: {
@@ -54,12 +65,14 @@ router.patch('/', auth, async (req, res, next) => {
         },
         data: c
       })
+      return res.status(200).json({message: "Sucefully updated"})
     } catch(err) {
+      console.error(err)
       return res.status(500).json({error:"Internal server error"})
     }
 })
 
-router.post('/', inverseAuth, async (req, res, next) => {
+router.post('/', inverseAuth, async (req, res) => {
     const {name, email, password} = req.body
     let e=0
     try {
@@ -80,7 +93,7 @@ router.post('/', inverseAuth, async (req, res, next) => {
         sameSite: "strict",
         maxAge: 60*60*24*3
       })
-      return res.json({user: u})
+      return res.status(201).json({message: "User created!"})
     } catch(err) {
       if (e===0) {
         return res.status(500).json({error:"Could not store password safely."})
@@ -89,7 +102,7 @@ router.post('/', inverseAuth, async (req, res, next) => {
     }
 })
 
-router.post('/login', inverseAuth, async(req, res, next) => {
+router.post('/login', inverseAuth, async(req, res) => {
     const {email, password} = req.body
     try {
       const u = await prisma.user.findUnique({
@@ -107,7 +120,7 @@ router.post('/login', inverseAuth, async(req, res, next) => {
         sameSite: "strict",
         maxAge: 60*60*24*3
       })
-      return res.send("User logged in successfully.")
+      return res.status(200).send("User logged in successfully.")
     } catch(err) {
       return res.status(500).json({erro: "Internal server error."})
     }
