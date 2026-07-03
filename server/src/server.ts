@@ -1,24 +1,21 @@
-import 'dotenv/config';
-import express from 'express';
-import cors from 'cors';
+import 'dotenv/config'
+import express from 'express'
+import cors from 'cors'
+import cookieparser from 'cookie-parser'
 import apiUsersRouter from './routes/users'
 import apiProductsRouter from './routes/products'
-import cookieparser from 'cookie-parser'
-const app = express();
 
-app.use(cors());
-app.use(express.json());
+const app = express()
+const PORT = process.env.PORT ? Number(process.env.PORT) : 3000
+
+app.use(cors())
+app.use(express.json())
 app.use(cookieparser())
-
-// Health check
-app.get('/health', (req, res) => res.json({ status: 'ok' }));
-
-// API routes
-app.use('/api/users', apiUsersRouter);
+app.use('/api/users', apiUsersRouter)
 app.use('/api/products', apiProductsRouter)
 
-const PORT = process.env.PORT ? Number(process.env.PORT) : 6767;
+app.get('/health', (req, res) => res.json({ status: 'ok' }))
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server rodando em http://localhost:${PORT}`)
 });
