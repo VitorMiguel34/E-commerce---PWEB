@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import prisma from '../db/prisma';
-import {auth, inverseAuth} from '../auth'
+import {auth} from '../auth'
 
 const secretkey = process.env.KEY
 const ProductRouter = Router()
@@ -32,7 +32,7 @@ ProductRouter.get('/:id', async (req, res) => {
   catch(err){
     res.status(500).json({error: "Internal server error"})
   }
-});
+})
 
 ProductRouter.patch('/', auth, async (req, res) => { 
     try {
@@ -43,10 +43,6 @@ ProductRouter.patch('/', auth, async (req, res) => {
 
       if (!product) {
         return res.status(404).json({error: "Product not found."})
-      }
-
-      if (product.owner_id !== res.locals.verify.id) {
-        return res.status(403).json({error: "You dont have permission to update this product."})
       }
       
       let newValues : any = {}
@@ -80,7 +76,6 @@ ProductRouter.post('/', auth, async (req, res) => {
   try {
     await prisma.product.create({
       data: {
-        owner_id: parseInt(res.locals.verify.id),
         name: name,
         description: description,
         price: price,

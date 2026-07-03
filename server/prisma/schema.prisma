@@ -6,24 +6,32 @@ datasource db {
   provider = "sqlite"
 }
 
-model User {
-  id        Int       @id @default(autoincrement())
-  email     String    @unique
-  name      String    
-  tokens    Float     @default(0)
-  password  String    @default("1234")
-  createdAt DateTime  @default(now())
-  products  Product[]
+model UserCart {
+  id             Int             @id @default(autoincrement())
+  email          String          @unique
+  name           String
+  tokens         Float           @default(0)
+  password       String          @default("1234")
+  createdAt      DateTime        @default(now())
+  productInCarts ProductInCart[]
 }
 
 model Product {
-  id          Int      @id @default(autoincrement())
-  owner_id    Int
-  name        String
-  description String?
-  price       Float
-  stock       Int      @default(0)
-  sku         String?  @unique
-  createdAt   DateTime @default(now())
-  Owner       User     @relation(fields: [owner_id], references: [id])
+  id             Int             @id @default(autoincrement())
+  name           String
+  description    String?
+  price          Float
+  stock          Int             @default(0)
+  sku            String?         @unique
+  createdAt      DateTime        @default(now())
+  productInCarts ProductInCart[]
+}
+
+model ProductInCart {
+  userCart   UserCart @relation(fields: [userCartId], references: [id])
+  userCartId Int
+  product    Product  @relation(fields: [productId], references: [id])
+  productId  Int
+
+  @@id([userCartId, productId])
 }

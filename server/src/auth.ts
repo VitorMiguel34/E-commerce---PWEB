@@ -6,7 +6,7 @@ const secretkey = process.env.KEY
 if (!secretkey) throw Error(".env: couldn't load secretkey properly.")
 
 const auth = async (req: any, res: any, next: any) => {
-    
+
     if (!req.cookies.sessiontoken) {
         return res.status(401).json({error: "Invalid credentials."})
     }
@@ -20,7 +20,7 @@ const auth = async (req: any, res: any, next: any) => {
             return res.status(401).json({error:"Invalid token format."})}
         autenticated = true
 
-        let user = await prisma.user.findUnique({
+        let user = await prisma.userCart.findUnique({
             where: {
                 id: verify.id
             }
