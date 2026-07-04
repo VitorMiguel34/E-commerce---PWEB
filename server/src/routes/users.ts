@@ -78,7 +78,7 @@ UsersRouter.post('/', inverseAuth, async (req : Request, res : Response) => {
     try {
       let hashpassword = await bcrypt.hash(password, 10)
       isValid = true
-      if (name.length > 50 || name.length === 0 || email.length === 0 || email.length > 256) {
+      if (name.length > 50 || name.length === 0 || email.length < 6 || email.length > 256) {
         return res.status(422).send("Invalid data format.")
       }
       const user = await prisma.userCart.create({

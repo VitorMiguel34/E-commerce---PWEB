@@ -1,5 +1,5 @@
-import { Router } from 'express';
-import prisma from '../db/prisma';
+import { Router } from 'express'
+import prisma from '../db/prisma'
 import {auth} from '../auth'
 
 const secretkey = process.env.KEY

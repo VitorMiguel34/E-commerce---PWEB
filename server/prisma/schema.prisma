@@ -13,8 +13,8 @@ model UserCart {
   tokens         Float           @default(0)
   password       String          @default("1234")
   createdAt      DateTime        @default(now())
-  productInCarts ProductInCart[]
   isAdmin        Boolean         @default(false)
+  productInCarts ProductInCart[]
 }
 
 model Product {
@@ -33,6 +33,7 @@ model ProductInCart {
   userCartId Int
   product    Product  @relation(fields: [productId], references: [id])
   productId  Int
+  quantity   Int      @default(1)
 
   @@id([userCartId, productId])
 }
