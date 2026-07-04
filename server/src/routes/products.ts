@@ -80,7 +80,8 @@ ProductRouter.post('/', auth, async (req, res) => {
         description: description,
         price: price,
         sku: sku,
-        stock: stock
+        stock: stock,
+        owner_id: Number(res.locals.verify.id)
       }
     })
   return res.status(201).json({message: "Product created"})

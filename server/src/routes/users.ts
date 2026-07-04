@@ -2,7 +2,7 @@ import { Router } from 'express'
 import prisma from '../db/prisma'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import {auth, inverseAuth} from '../auth'
+import {auth, inverseAuth, adminAuth} from '../auth'
 import {Request, Response} from 'express'
 
 const UsersRouter = Router()
