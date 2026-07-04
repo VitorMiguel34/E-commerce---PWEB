@@ -3,13 +3,14 @@ import prisma from '../db/prisma'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
 import {auth, inverseAuth} from '../auth'
+import {Request, Response} from 'express'
 
 const UsersRouter = Router()
 const secretkey = process.env.KEY
 
 if (!secretkey) throw Error(".env: couldn't load secretkey properly.")
 
-UsersRouter.get('/', async (req,res) => {
+UsersRouter.get('/', async (req : Request, res : Response) => {
   try{
     const users = await prisma.userCart.findMany({
       omit: {
@@ -23,27 +24,31 @@ UsersRouter.get('/', async (req,res) => {
   }
 })
 
-UsersRouter.get('/:id', async (req, res) => {
+UsersRouter.get('/:id', async (req : Request, res : Response) => {
   try{
-      const user = await prisma.userCart.findUnique({
-        where: {
-          id: parseInt(req.params.id)
-        },
-        omit: {
-          password: true
-        }
-      })
-      if (!user) {
-        return res.status(404).json({error: "User not found"})
+    const id : number = Number(req.params.id)
+    if (isNaN(id)) {
+      return res.status(400).json({error: "Invalid user ID"})
+    }
+    const user = await prisma.userCart.findUnique({
+      where: {
+        id: id
+      },
+      omit: {
+        password: true
       }
-      return res.status(200).json(user)
+    })
+    if (!user) {
+      return res.status(404).json({error: "User not found"})
+    }
+    return res.status(200).json(user)
   }
   catch(err){
     res.status(500).json({error: "Internal server error", description: err})
   }
 })
 
-UsersRouter.patch('/', auth, async (req, res) => {
+UsersRouter.patch('/', auth, async (req : Request, res : Response) => {
     try {
       let newValues : any = {}
       Object.keys(req.body).forEach((key : string) => {
@@ -67,7 +72,7 @@ UsersRouter.patch('/', auth, async (req, res) => {
     }
 })
 
-UsersRouter.post('/', inverseAuth, async (req, res) => {
+UsersRouter.post('/', inverseAuth, async (req : Request, res : Response) => {
     const {name, email, password} = req.body
     let isValid = false
     try {
@@ -97,7 +102,7 @@ UsersRouter.post('/', inverseAuth, async (req, res) => {
     }
 })
 
-UsersRouter.post('/login', inverseAuth, async(req, res) => {
+UsersRouter.post('/login', inverseAuth, async(req : Request, res : Response) => {
     const {email, password} = req.body
     try {
       const user = await prisma.userCart.findUnique({

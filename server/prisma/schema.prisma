@@ -14,6 +14,7 @@ model UserCart {
   password       String          @default("1234")
   createdAt      DateTime        @default(now())
   productInCarts ProductInCart[]
+  isAdmin        Boolean         @default(false)
 }
 
 model Product {
