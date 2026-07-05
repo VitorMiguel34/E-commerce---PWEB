@@ -82,6 +82,69 @@ CartsRouter.post("/", auth, async ( req : Request, res : Response) => {
     }
 })
 
+CartsRouter.post("/purchase", auth, async (req: Request, res: Response) => {
+    try {
+        const userId = res.locals.verify.id
+        const productId = req.body.id
+        const cartProduct = await prisma.productInCart.findUnique(
+            {
+                where: where(userId, productId)
+            }
+        )
+        if (!cartProduct) {
+            return res.status(404).json({error:"Product could not be found in your cart."})
+        }
+        const user = await prisma.userCart.findUnique({
+            where: {
+                id: userId
+            }, 
+            omit: {password: true}
+        })
+        const product = await prisma.product.findUnique({
+            where: {
+                id: productId
+            }
+        })
+        if (!product) {
+            return res.status(404).json({error:"Product could not be found."})
+        }
+        if (cartProduct.price > user.tokens) {
+            return res.status(403).send("Not enough tokens.")
+        }
+        if (product.quantity < cartProduct.quantity) {
+            return res.status(403).send("Out of stock.")
+        }
+        await prisma.$transaction([  
+            prisma.userCart.update({
+                where: {
+                    id: user.owner_id
+                },
+                data: {
+                    tokens: {increment: product.price}
+                }
+            }),
+            prisma.userCart.update({
+                where: {
+                    id: userId
+                },
+                data: {
+                    tokens: {decrement: product.price}
+                }
+            }),
+            prisma.product.update({
+                where: {
+                    id: productId
+                },
+                data: {
+                    quantity: {decrement: cartProduct.quantity}
+                }
+            })
+        ])
+    } catch(err) {
+        return res.status(500).json({error: "Internal server error"})
+    }
+})
+
 CartsRouter.patch("/", auth, async ( req : Request, res : Response) => {
     try{
         const userId : number = Number(res.locals.verify.id)
