@@ -127,3 +127,5 @@ CartsRouter.delete("/:id", auth, async ( req : Request, res : Response) => {
         return res.status(500).json({error: "Internal server error", description: err})
     }
 })
+
+export default CartsRouter
