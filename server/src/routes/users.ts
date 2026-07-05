@@ -51,19 +51,22 @@ UsersRouter.get('/:id', async (req : Request, res : Response) => {
 UsersRouter.patch('/', auth, async (req : Request, res : Response) => {
     try {
       let newValues : any = {}
+      if (req.body.password){ 
+        const hashpassword = await bcrypt.hash(req.body.password, 10)
+        newValues["password"] = hashpassword
+      }
+
       Object.keys(req.body).forEach((key : string) => {
-        if ( key === "password" && req.body[key] !== undefined) {
-          newValues[key] = bcrypt.hash(req.body[key], 10)
-        }else if (req.body[key] !== undefined) {
+        if (req.body[key] !== undefined && key !== "password") {
           newValues[key] = req.body[key]
         }
       })
-        
+
       await prisma.userCart.update({
         where: {
           id: res.locals.verify.id
         },
-        data: newValues
+        data: newValues,
       })
       return res.status(200).json({message: "Sucefully updated"})
     } catch(err) {
