@@ -1,16 +1,18 @@
-import { Router } from 'express';
-import prisma from '../prisma';
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
-import {auth, inverseAuth} from '../auth'
-const router = Router();
+import { Router } from 'express'
+import prisma from '../db/prisma'
+import bcrypt from 'bcrypt'
+import jwt from 'jsonwebtoken'
+import {auth, inverseAuth, adminAuth} from '../auth'
+import {Request, Response} from 'express'
+
+const UsersRouter = Router()
 const secretkey = process.env.KEY
 
 if (!secretkey) throw Error(".env: couldn't load secretkey properly.")
 
-router.get('/', async (req,res) => {
+UsersRouter.get('/', async (req : Request, res : Response) => {
   try{
-    const users = await prisma.user.findMany({
+    const users = await prisma.userCart.findMany({
       omit: {
         password: true
       }
@@ -18,52 +20,53 @@ router.get('/', async (req,res) => {
     return res.status(200).json(users)
   }
   catch(err){
-    return res.status(500).json({error: "Internal server erro"})
+    return res.status(500).json({error: "Internal server error"})
   }
 })
 
-router.get('/:id', async (req, res) => {
+UsersRouter.get('/:id', async (req : Request, res : Response) => {
   try{
-      const u = await prisma.user.findUnique({
-        where: {
-          id: parseInt(req.params.id)
-        },
-        omit: {
-          password: true
-        }
-      })
-      if (!u) {
-        return res.status(404).json({error: "User not found"})
+    const id : number = Number(req.params.id)
+    if (isNaN(id)) {
+      return res.status(400).json({error: "Invalid user ID"})
+    }
+    const user = await prisma.userCart.findUnique({
+      where: {
+        id: id
+      },
+      omit: {
+        password: true
       }
-      return res.status(200).json(u)
+    })
+    if (!user) {
+      return res.status(404).json({error: "User not found"})
+    }
+    return res.status(200).json(user)
   }
   catch(err){
-    res.status(500).json({error: "Internal server error"})
+    res.status(500).json({error: "Internal server error", description: err})
   }
-});
+})
 
-router.patch('/', auth, async (req, res) => {
-    const {name, email, password} = req.body
-    let b = new Map()
-    b.set("name", name)
-    b.set("email", email)
+UsersRouter.patch('/', auth, async (req : Request, res : Response) => {
     try {
-      if (password) {
-        b.set("password",await bcrypt.hash(password, 10))
+      let newValues : any = {}
+      if (req.body.password){ 
+        const hashpassword = await bcrypt.hash(req.body.password, 10)
+        newValues["password"] = hashpassword
       }
 
-      let c: any = {}
-      b.forEach((value,key) => {
-        if (value) {
-          c[key] = value
+      Object.keys(req.body).forEach((key : string) => {
+        if (req.body[key] !== undefined && key !== "password") {
+          newValues[key] = req.body[key]
         }
       })
-        
-      await prisma.user.update({
+
+      await prisma.userCart.update({
         where: {
-          id: res.locals.v.id
+          id: res.locals.verify.id
         },
-        data: c
+        data: newValues,
       })
       return res.status(200).json({message: "Sucefully updated"})
     } catch(err) {
@@ -72,50 +75,50 @@ router.patch('/', auth, async (req, res) => {
     }
 })
 
-router.post('/', inverseAuth, async (req, res) => {
+UsersRouter.post('/', inverseAuth, async (req : Request, res : Response) => {
     const {name, email, password} = req.body
-    let e=0
+    let isValid = false
     try {
-      let h = await bcrypt.hash(password, 10)
-      e++
-      if (name.length > 50 || name.length === 0 || email.length === 0 || email.length > 256) {
+      let hashpassword = await bcrypt.hash(password, 10)
+      isValid = true
+      if (name.length > 50 || name.length === 0 || email.length < 6 || email.length > 256) {
         return res.status(422).send("Invalid data format.")
       }
-      const u = await prisma.user.create({
+      const user = await prisma.userCart.create({
         data: {
           name: name,
           email: email,
-          password: h
+          password: hashpassword
         }
       })
-      res.cookie("sessiontoken", jwt.sign({id:u.id}, secretkey), {
+      res.cookie("sessiontoken", jwt.sign({id : user.id}, secretkey), {
         httpOnly: true,
         sameSite: "strict",
         maxAge: 60*60*24*3
       })
       return res.status(201).json({message: "User created!"})
     } catch(err) {
-      if (e===0) {
+      if (!isValid) {
         return res.status(500).json({error:"Could not store password safely."})
       }
       return res.status(500).json({error:'Could not create user account; internal server error.'})
     }
 })
 
-router.post('/login', inverseAuth, async(req, res) => {
+UsersRouter.post('/login', inverseAuth, async(req : Request, res : Response) => {
     const {email, password} = req.body
     try {
-      const u = await prisma.user.findUnique({
+      const user = await prisma.userCart.findUnique({
         where: {email: email}
       })
-      if (!u) {
+      if (!user) {
         return res.status(404).json({erro: "User not found."})
       }
-      const s = await bcrypt.compare(password, u.password)
-      if (!s) {
+      const isPasswordValid = await bcrypt.compare(password, user.password)
+      if (!isPasswordValid) {
         return res.status(401).json({erro: "Incorrect credentials."})
       }
-      res.cookie("sessiontoken", jwt.sign({id:u.id}, secretkey), {
+      res.cookie("sessiontoken", jwt.sign({id : user.id}, secretkey), {
         httpOnly: true,
         sameSite: "strict",
         maxAge: 60*60*24*3
@@ -126,4 +129,4 @@ router.post('/login', inverseAuth, async(req, res) => {
     }
 })
 
-export default router
+export default UsersRouter

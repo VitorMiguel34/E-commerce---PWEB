@@ -1,24 +1,45 @@
-import 'dotenv/config';
-import express from 'express';
-import cors from 'cors';
-import apiUsersRouter from './routes/users'
-import apiProductsRouter from './routes/products'
+import 'dotenv/config'
+import express from 'express'
+import cors from 'cors'
 import cookieparser from 'cookie-parser'
-const app = express();
+import UsersRouter from './routes/users'
+import ProductsRouter from './routes/products'
+import CartsRouter from './routes/carts'
+import prisma from './db/prisma'
+import bcrypt from 'bcrypt'
+import { Request, Response } from 'express'
 
-app.use(cors());
-app.use(express.json());
+const app = express()
+const PORT = process.env.PORT ? Number(process.env.PORT) : 3000
+
+app.use(cors())
+app.use(express.json())
 app.use(cookieparser())
+app.use('/api/users', UsersRouter)
+app.use('/api/products', ProductsRouter)
+app.use('/api/carts', CartsRouter)
 
-// Health check
-app.get('/health', (req, res) => res.json({ status: 'ok' }));
+async function createAdmin(){
+  const adminPassword : string = await bcrypt.hash(process.env.ADMIN_PASSWORD || "", 10) 
+  const adminEmail : string = process.env.ADMIN_EMAIL || ""
 
-// API routes
-app.use('/api/users', apiUsersRouter);
-app.use('/api/products', apiProductsRouter)
+  await prisma.userCart.upsert({
+    where: { 
+        email: adminEmail 
+      },
+      update: {}, 
+      create: {  
+        name: "admin",
+        email: adminEmail,
+        password: adminPassword,
+      }
+    })
+}
 
-const PORT = process.env.PORT ? Number(process.env.PORT) : 6767;
+createAdmin()
+
+app.get('/health', (req : Request, res : Response ) => res.json({ status: 'ok' }))
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+  console.log(`Server rodando em http://localhost:${PORT}`)
 });

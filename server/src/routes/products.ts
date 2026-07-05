@@ -1,15 +1,15 @@
-import { Router } from 'express';
-import prisma from '../prisma';
-import jwt from 'jsonwebtoken'
-import {auth, inverseAuth} from '../auth'
+import { Router } from 'express'
+import prisma from '../db/prisma'
+import {auth} from '../auth'
+
 const secretkey = process.env.KEY
-const router = Router();
+const ProductRouter = Router()
 
 if (!secretkey) throw Error(".env: couldn't load secretkey properly.")
 
-router.get('/', async (req,res) => {
+ProductRouter.get('/', async (req,res) => {
   try{
-    const products = await prisma.product.findMany({})
+    const products = await prisma.product.findMany()
     return res.status(200).json(products)
   }
   catch(err){
@@ -17,12 +17,12 @@ router.get('/', async (req,res) => {
   }
 })
 
-router.get('/:id', async (req, res) => {
+ProductRouter.get('/:id', async (req, res) => {
   try{
-      const product = await prisma.user.findUnique({
+      const product = await prisma.product.findUnique({
         where: {
           id: parseInt(req.params.id)
-        },
+        }
       })
       if (!product) {
         return res.status(404).json({error: "Product not found"})
@@ -32,35 +32,24 @@ router.get('/:id', async (req, res) => {
   catch(err){
     res.status(500).json({error: "Internal server error"})
   }
-});
+})
 
-router.patch('/', auth, async (req, res) => { 
+ProductRouter.patch('/', auth, async (req, res) => { 
     try {
-      const {id, sku, name, description, price, stock} = req.body
-      let p = await prisma.product.findUnique({
+      const id : number = req.body.id
+      let product = await prisma.product.findUnique({
         where: {id: id}
       })
 
-      if (!p) {
+      if (!product) {
         return res.status(404).json({error: "Product not found."})
       }
-
-      if (!(p.owner_id === res.locals.v.id)) {
-        return res.status(403).json({error: "You dont have permission to update this product."})
-      }
       
+      let newValues : any = {}
 
-      let b = new Map()
-      b.set("sku", sku)
-      b.set("name", name)
-      b.set("description", description)
-      b.set("price", price)
-      b.set("stock", stock)
-
-      let c:any = {}
-      b.forEach((value,key) => {
-        if (value) {
-          c[key] = value
+      Object.keys(req.body).forEach((key : string) => {
+        if (req.body[key] !== undefined) {
+          newValues[key] = req.body[key]
         }
       })
 
@@ -68,7 +57,7 @@ router.patch('/', auth, async (req, res) => {
         where: {
           id: id
         },
-        data: c
+        data: newValues
       })
       return res.status(200).json({message: "Successfully updated"})
   } catch(err) {
@@ -76,7 +65,7 @@ router.patch('/', auth, async (req, res) => {
   }
 })
 
-router.post('/', auth, async (req, res) => {
+ProductRouter.post('/', auth, async (req, res) => {
   const {name, description, price, sku, stock} = req.body
   if (Number.isNaN(price)) {
       return res.status(422).json({error: "Invalid data format."})
@@ -85,14 +74,14 @@ router.post('/', auth, async (req, res) => {
       return res.status(422).json({error: "Invalid data format."})
   }
   try {
-    const a = await prisma.product.create({
+    await prisma.product.create({
       data: {
-        owner_id: res.locals.v,
         name: name,
         description: description,
         price: price,
         sku: sku,
-        stock: stock
+        stock: stock,
+        owner_id: Number(res.locals.verify.id)
       }
     })
   return res.status(201).json({message: "Product created"})
@@ -101,4 +90,4 @@ router.post('/', auth, async (req, res) => {
   }
 })
 
-export default router;
+export default ProductRouter

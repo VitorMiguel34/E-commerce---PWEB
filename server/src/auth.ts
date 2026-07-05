@@ -1,54 +1,83 @@
 import jwt from 'jsonwebtoken'
-import prisma from './prisma'
+import prisma from './db/prisma'
+import { Request, Response, NextFunction } from 'express'
+
 const secretkey = process.env.KEY
 
 if (!secretkey) throw Error(".env: couldn't load secretkey properly.")
 
-const auth = async (req: any, res: any, next: any) => {
+const auth = async (req: Request, res: Response, next: NextFunction) => {
+
     if (!req.cookies.sessiontoken) {
         return res.status(401).json({error: "Invalid credentials."})
     }
-    let e=0
+    let autenticated = false
+
     try {
-        let v = jwt.verify(req.cookies.sessiontoken, secretkey)
-        if (typeof v === 'string') {
-            res.cookie("sessiontoken", 0, {
-                httpOnly:true,  
-                maxAge: 0.1
-            })
+        let verify = jwt.verify(req.cookies.sessiontoken, secretkey)
+
+        if (typeof verify === 'string') {
+            res.clearCookie("sessiontoken", {httpOnly : true})
             return res.status(401).json({error:"Invalid token format."})}
-        e++
-        let v2 = await prisma.user.findUnique({
-            where: {
-                id: v.id
-            }
+        autenticated = true
+
+        let user = await prisma.userCart.findUnique({
+            where: { id: verify.id }
         })
-        if (!v2) {
-            res.cookie("sessiontoken", 0, {
-                httpOnly:true,  
-                maxAge: 0.1
-            })
+        if (!user) {
+            res.clearCookie("sessiontoken", {httpOnly : true})
             return res.status(401).json({error: "Invalid credentials; account doesn't exist."})
         }
-        res.locals.v = v
+        res.locals.verify = verify
         return next()       
     } catch(err) {
-        if (e === 0) {
-            res.cookie("sessiontoken",0, {
-                httpOnly: true,
-                maxAge: 0.1
-            })
+        if (!autenticated) {
+            res.clearCookie("sessiontoken", {httpOnly : true})
             return res.status(401).json({error: "Invalid session token."})
         }
         return res.status(500).json({error: "Internal server error."})
     }
 }
 
-const inverseAuth = async (req:any, res:any, next:any) => {
+const adminAuth = async ( req : Request, res : Response, next : NextFunction) => {
+    if (!req.cookies.sessiontoken){
+        return res.status(401).json({error: "Invalid credentials."})
+    }
+    let autenticated = false
+    try{
+        const verify = jwt.verify(req.cookies.sessiontoken, secretkey)
+        if (typeof verify === 'string') {
+            res.clearCookie("sessiontoken", {httpOnly : true})
+            return res.status(401).json({error:"Invalid token format."})
+        }
+        autenticated = true
+        const user = await prisma.userCart.findUnique({
+            where : { id : verify.id}
+        })
+        if(!user){
+            res.clearCookie("sessiontoken", {httpOnly : true})
+            return res.status(401).json({error: "Invalid credentials; account doesn't exist."})
+        }
+        if(!user.isAdmin){
+            res.clearCookie("sessiontoken", {httpOnly : true})
+            return res.status(403).json({error: "Permission denied; user is not an admin."})
+        }
+        res.locals.verify = verify
+        return next()
+    }catch(err){
+        if (!autenticated) {
+            res.clearCookie("sessiontoken", {httpOnly : true})
+            return res.status(401).json({error: "Invalid session token."})
+        }
+        return res.status(500).json({error: "Internal server error."})
+    }
+}
+
+const inverseAuth = async (req : Request, res : Response, next : NextFunction) => {
     if (!req.cookies.sessiontoken) {
         return next()
     }
     return res.status(403).json({error: "Forbidden."})
 }
 
-export {auth, inverseAuth}
+export {auth, inverseAuth, adminAuth}
