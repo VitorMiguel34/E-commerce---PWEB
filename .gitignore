@@ -5,3 +5,7 @@ node_modules/
 server/prisma/dev.db
 .DS_Store
 dist/
+<<<<<<< HEAD
+=======
+dev.db
+>>>>>>> e685ec177cbb88baa181bdf755d654eddc20c620

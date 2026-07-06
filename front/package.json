@@ -16,7 +16,10 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+<<<<<<< HEAD
     "@tailwindcss/postcss": "^4.3.2",
+=======
+>>>>>>> e685ec177cbb88baa181bdf755d654eddc20c620
     "@tailwindcss/vite": "^4.3.1",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
