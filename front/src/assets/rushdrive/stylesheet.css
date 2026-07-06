@@ -1,0 +1,9 @@
+@font-face {
+    font-family: 'Rush Driver';
+    src: url('RushDriver-Italic.woff2') format('woff2'),
+        url('RushDriver-Italic.woff') format('woff');
+    font-weight: normal;
+    font-style: italic;
+    font-display: swap;
+}
+

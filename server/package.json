@@ -14,10 +14,15 @@
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
     "@types/better-sqlite3": "^7.6.13",
+<<<<<<< HEAD
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+=======
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
+>>>>>>> e685ec177cbb88baa181bdf755d654eddc20c620
     "@types/node": "^25.5.2",
     "@types/pg": "^8.20.0",
     "prisma": "^7.7.0",
@@ -31,11 +36,17 @@
     "@prisma/client": "^7.7.0",
     "bcrypt": "^6.0.0",
     "better-sqlite3": "^12.8.0",
+<<<<<<< HEAD
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.1",
+    "express": "^5.2.1",
+=======
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
     "dotenv": "^17.4.1",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
+>>>>>>> e685ec177cbb88baa181bdf755d654eddc20c620
     "morgan": "^1.11.0",
     "pg": "^8.20.0"
   },

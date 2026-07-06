@@ -1,4 +1,10 @@
 import { useState } from 'react'
+<<<<<<< HEAD
+import Corpo from './componentes/corpo'
+import Cabecalho from './componentes/cabecalho'
+import Rodape from './componentes/rodape'
+=======
+>>>>>>> e685ec177cbb88baa181bdf755d654eddc20c620
 import reactLogo from './assets/react.svg'
 import viteLogo from './assets/vite.svg'
 import heroImg from './assets/hero.png'
@@ -8,6 +14,28 @@ function App() {
   const [count, setCount] = useState(0)
 
   return (
+<<<<<<< HEAD
+<div>
+   
+    <div>
+      <header>
+    <Cabecalho />
+    </header>
+     </div>
+
+     <div>
+<Corpo/>
+     </div>
+
+<footer>
+     <div><Rodape/></div>
+     </footer>
+
+
+   </div>
+  ) 
+  }
+=======
     <>
       <section id="center">
         <div className="hero">
@@ -118,5 +146,6 @@ function App() {
     </>
   )
 }
+>>>>>>> e685ec177cbb88baa181bdf755d654eddc20c620
 
 export default App
