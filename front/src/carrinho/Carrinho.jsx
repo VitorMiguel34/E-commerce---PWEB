@@ -1,6 +1,7 @@
 import { useState, useEffect, useInsertionEffect } from "react";
-import api from './services/api'
-import cardElements from './cardElement'
+import api from '../services/api'
+import CardElements from './cardElement'
+import CardElements from './cardCalculo'
 
 export default function Carrinho(){
     const [items, setItems] = useState("")
@@ -32,6 +33,7 @@ export default function Carrinho(){
     return(
         <div>
             <cardElements itens={items}/>
+            <cardCalculo itens={items}/>
         </div>
     )
 }

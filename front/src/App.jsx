@@ -2,12 +2,14 @@ import { useState } from 'react'
 import './App.css'
 import LoginPage from './LoginPage'
 import SignUp from './SignUp'
+import Carrinho from './carrinho/Carrinho'
 
 function App() {
 
   return (
     <>
-      <SignUp/>
+      <Carrinho/>
+      {/* <SignUp/> */}
       {/* <LoginPage/> */}
     </>
   )
