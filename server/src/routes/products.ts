@@ -8,13 +8,24 @@ const ProductRouter = Router()
 if (!secretkey) throw Error(".env: couldn't load secretkey properly.")
 
 ProductRouter.get('/', async (req,res) => {
-  try{
-    const products = await prisma.product.findMany()
-    return res.status(200).json(products)
+  if (req.query.categoria === "") {     
+      try{
+        const products = await prisma.product.findMany()
+        return res.status(200).json(products)
+      }
+      catch(err){
+        return res.status(500).json({error: "Internal server error"})
+      }
   }
-  catch(err){
-    return res.status(500).json({error: "Internal server erro"})
+  if (typeof req.query.categoria !== 'string') {
+    return res.status(422).json({error:"invalid format."})
   }
+  const products = await prisma.product.findMany({
+    where: {
+      category: req.query.categoria
+    }
+  })
+  return res.json(products)
 })
 
 ProductRouter.get('/:id', async (req, res) => {
@@ -27,16 +38,16 @@ ProductRouter.get('/:id', async (req, res) => {
       if (!product) {
         return res.status(404).json({error: "Product not found"})
       }
-      return res.status(200).json(product)
+      return res.json(product)
   }
   catch(err){
     res.status(500).json({error: "Internal server error"})
   }
 })
 
-ProductRouter.patch('/', auth, async (req, res) => { 
+ProductRouter.patch('/:id', auth, async (req, res) => { 
     try {
-      const id : number = req.body.id
+      const id : number = Number(req.params.id)
       let product = await prisma.product.findUnique({
         where: {id: id}
       })
@@ -66,27 +77,41 @@ ProductRouter.patch('/', auth, async (req, res) => {
 })
 
 ProductRouter.post('/', auth, async (req, res) => {
-  const {name, description, price, sku, stock} = req.body
-  if (Number.isNaN(price)) {
+  console.log('recebi')
+  const {nome, descricao, preco, estoque, categoria} = req.body
+  if (Number.isNaN(preco)) {
       return res.status(422).json({error: "Invalid data format."})
   }
-  if (name.length === 0 || parseFloat(price) < 0) {
+  if (nome.length === 0 || parseFloat(preco) < 0) {
       return res.status(422).json({error: "Invalid data format."})
   }
   try {
     await prisma.product.create({
       data: {
-        name: name,
-        description: description,
-        price: price,
-        sku: sku,
-        stock: stock,
-        owner_id: Number(res.locals.verify.id)
+        ownerId: parseInt(res.locals.verify.id),
+        name: nome,
+        description: descricao,
+        price: preco,
+        stock: estoque,
+        category: categoria
       }
     })
   return res.status(201).json({message: "Product created"})
   } catch(err) {
     return res.status(500).send("Internal server error")
+  }
+})
+
+ProductRouter.delete('/:id', async (req, res) => {
+  try{
+    await prisma.product.delete({
+      where: {
+        id: parseInt(req.params.id)
+      }
+    })
+    return res.send("product deleted.")
+  } catch(err) {
+    return res.status(500).json({error:"Internal server error."})
   }
 })
 

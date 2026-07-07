@@ -6,7 +6,7 @@ const router = Router();
 // Users
 router.get('/users', async (req, res, next) => {
   try {
-    const users = await prisma.user.findMany();
+    const users = await prisma.userCart.findMany();
     res.json(users);
   } catch (err) {
     next(err);

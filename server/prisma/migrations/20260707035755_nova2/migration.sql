@@ -1,0 +1,8 @@
+-- CreateTable
+CREATE TABLE "Coupon" (
+    "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+    "userCartId" INTEGER NOT NULL,
+    "discount" INTEGER NOT NULL,
+    "used" BOOLEAN NOT NULL DEFAULT false,
+    CONSTRAINT "Coupon_userCartId_fkey" FOREIGN KEY ("userCartId") REFERENCES "UserCart" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+);
