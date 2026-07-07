@@ -1,3 +1,210 @@
+<<<<<<< HEAD
+body{
+    margin:0;
+    font-family:"Segoe UI",sans-serif;
+    background:linear-gradient(rgba(0,0,0,.4),rgba(0,0,0,.4)),url("assets/fundo.png");
+    background-size:cover;
+    background-position:center;
+    background-attachment:fixed;
+}
+
+/* cabecalho */
+.cabecalho{
+    position:sticky;
+    top:10px;
+    width:95%;
+    margin:auto;
+    padding:10px 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:rgba(0,0,0,.4);
+    border-radius:12px;
+    flex-wrap:wrap;
+}
+
+.logo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.logo img{
+    width:80px;
+    height:60px;
+    border-radius:50%;
+}
+
+.logo h2{
+    color:#2ecc71;
+    font-size:20px;
+    margin:0;
+}
+
+.lala{
+    color:#fff;
+}
+
+.conteinePesquisa{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+}
+
+.conteinePesquisa input,
+.conteinePesquisa select{
+    height:35px;
+    padding:0 10px;
+    border:none;
+    border-radius:8px;
+    background:rgba(255,255,255,.2);
+    color:white;
+}
+
+.conteinePesquisa input{
+    width:200px;
+}
+
+.pesquisa{
+    height:35px;
+    padding:0 15px;
+    border:none;
+    border-radius:8px;
+    background:#2ecc71;
+    color:white;
+    cursor:pointer;
+}
+
+.icone-img{
+    width:40px;
+    height:40px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:rgba(255,255,255,.2);
+    border-radius:8px;
+}
+
+.icone-img img{
+    width:25px;
+    height:25px;
+}
+
+/* corpo agora com "cartao branco" */
+.corpo-container{
+    width:90%;
+    margin:40px auto;
+    background:rgba(255,255,255,.95);
+    color:black;
+    border-radius:15px;
+    padding:30px;
+}
+
+/* banner */
+.banner{
+    text-align:center;
+    padding:50px 20px;
+    background:rgba(0,0,0,.05);
+    border-radius:12px;
+}
+
+.banner h1{
+    font-size:28px;
+}
+
+.banner p{
+    color:#555;
+}
+
+/* secoes */
+.titulo-secao{
+    margin:40px 0 20px;
+}
+
+/* carrossel */
+.carrossel{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:15px;
+}
+
+.seta{
+    width:40px;
+    height:40px;
+    border:none;
+    border-radius:50%;
+    background:#2ecc71;
+    color:white;
+}
+
+.grade-produtos{
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+    justify-content:center;
+}
+
+.cartao-produto{
+    width:240px;
+    padding:15px;
+    background:rgba(0,0,0,.05);
+    border-radius:10px;
+    text-align:center;
+}
+
+.foto-produto{
+    width:100%;
+    height:200px;
+    background:#ccc;
+    border-radius:10px;
+    margin-bottom:10px;
+}
+
+.cartao-produto span{
+    color:#2ecc71;
+    display:block;
+    margin:10px 0;
+}
+
+.cartao-produto button{
+    width:100%;
+    height:40px;
+    border:none;
+    border-radius:8px;
+    background:#2ecc71;
+    color:white;
+}
+
+/* vantagen */
+.vantagens-container{
+    margin:40px 0;
+    display:flex;
+    gap:15px;
+    flex-wrap:wrap;
+    justify-content:center;
+}
+
+.vantagem-item{
+    padding:12px 20px;
+    background:rgba(0,0,0,.05);
+    border-radius:8px;
+}
+
+/* rodape */
+.rodape-loja{
+    color: floralwhite;
+
+    margin-top:40px;
+    text-align:center;
+    margin-left: -49px;
+ 
+}
+
+
+.rodape-loja a:visited{
+    color:white;
+=======
 .counter {
   font-size: 16px;
   padding: 5px 10px;
@@ -181,4 +388,5 @@
     right: 0;
     border-right-color: var(--border);
   }
+>>>>>>> e685ec177cbb88baa181bdf755d654eddc20c620
 }
