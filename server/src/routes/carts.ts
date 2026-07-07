@@ -232,17 +232,14 @@ CartsRouter.delete("/items/:id", auth, async ( req : Request, res : Response) =>
 
 CartsRouter.post('/cupom', async (req, res) => {
     try {
-    const recentCoupon = await prisma.coupon.findFirst({
+    const recentCoupon = await prisma.coupon.findUnique({
         where: {
+            id: res.locals.verify.id,
             used: false
-        },
-        orderBy: {
-            id: "asc"
         }
-        
     })
     if (!recentCoupon) {
-        return res.status(404).json({error:"No unused coupons."})
+        return res.status(404).json({error:"Inexistente/already used coupon."})
     }
     const multiplier = (1-recentCoupon.discount/100)
     await prisma.productInCart.updateMany({
@@ -255,6 +252,15 @@ CartsRouter.post('/cupom', async (req, res) => {
             }
         }
     })
+    await prisma.coupon.update({
+        where: {
+            id: parseInt(req.body.id)
+        },
+        data: {
+            used: true
+        }
+    })
+    return res.json({message: "Coupon applied."})
 }catch(err) {
     return res.status(500).json({error: "internal server error"})
 }})

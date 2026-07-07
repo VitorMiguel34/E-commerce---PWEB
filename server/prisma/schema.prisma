@@ -6,7 +6,6 @@ datasource db {
   provider = "sqlite"
 }
 
-<<<<<<< HEAD
 model User {
   id        Int      @id @default(autoincrement())
   email     String   @unique
@@ -14,14 +13,6 @@ model User {
   createdAt DateTime @default(now())
 }
 
-model Product {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String?
-  price       Float
-  sku         String?  @unique
-  createdAt   DateTime @default(now())
-=======
 model UserCart {
   id             Int             @id @default(autoincrement())
   email          String          @unique
@@ -61,7 +52,6 @@ model ProductInCart {
   price      Int      @default(0)
 
   @@id([userCartId, productId])
->>>>>>> e685ec177cbb88baa181bdf755d654eddc20c620
 }
 
 model Order {
