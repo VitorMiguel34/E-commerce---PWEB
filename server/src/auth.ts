@@ -7,40 +7,36 @@ const secretkey = process.env.KEY
 if (!secretkey) throw Error(".env: couldn't load secretkey properly.")
 
 const auth = async (req: Request, res: Response, next: NextFunction) => {
-    // if (!req.cookies.sessiontoken) {
-    //     return res.status(401).json({error: "Invalid credentials."})
-    // }
-    // let autenticated = false
-    // try {
-    //     let verify = jwt.verify(req.cookies.sessiontoken, secretkey)
-
-    //     if (typeof verify === 'string') {
-    //         res.clearCookie("sessiontoken", {httpOnly : true})
-    //         return res.status(401).json({error:"Invalid token format."})}
-    //     autenticated = true
-
-    //     let user = await prisma.userCart.findUnique({
-    //         where: { id: verify.id }
-    //     })
-    //     if (!user) {
-    //         res.clearCookie("sessiontoken", {httpOnly : true})
-    //         return res.status(401).json({error: "Invalid credentials; account doesn't exist."})
-    //     }
-    //     res.locals.verify = verify
-    //     return next()       
-    // } catch(err) {
-    //     if (!autenticated) {
-    //         res.clearCookie("sessiontoken", {httpOnly : true})
-    //         return res.status(401).json({error: "Invalid session token."})
-    //     }
-    //     return res.status(500).json({error: "Internal server error."})
-    // }
-    let verify = {
-        id: 1
+    if (!req.headers.authorization) {
+        return res.status(401).json({error: "Forbidden."})
     }
-    res.locals.verify = verify
-    return next()
-    // foi o jeito rapaziada o bot do coisa la nao faz login ❌
+
+    let auth = req.headers.authorization.split(' ')
+    if (auth[0] !== "Bearer") {
+        return res.status(401).json({error: "Not authorized."})
+    }
+    try {
+        let j = jwt.verify(auth[1], secretkey)
+        if (typeof j === "string") {
+            return res.status(401).json({error: "Invalid JWT token format."})
+        }
+
+        let u = await prisma.userCart.findUnique({
+            where: {
+                id: j.id
+            }
+        })
+        if (!u) {
+            return res.status(401).json({error: "Inexistent user."})
+        }
+        let verify = {
+            id: j.id
+        }
+        res.locals.verify = verify
+        return next()
+    } catch(err) {
+        return res.status(401).json({error: "Not authorized."})
+    }
 }
 
 const adminAuth = async ( req : Request, res : Response, next : NextFunction) => {
@@ -78,20 +74,17 @@ const adminAuth = async ( req : Request, res : Response, next : NextFunction) =>
 }
 
 const inverseAuth = async (req : Request, res : Response, next : NextFunction) => {
-    if (!req.cookies.sessiontoken) {
+    if (!req.headers.authorization) {
         return next()
     }
     return res.status(403).json({error: "Forbidden."})
 }
 
-// isso aq é por causa do bot la tbm 😡 se nao ele nao faz sozinho
 const autoverif = async (req: Request, res: Response, next: NextFunction) => {
     try {
-    console.log('recebi')
     const coupons = await prisma.coupon.findMany()
     const products = await prisma.product.findMany()
     const users = await prisma.userCart.findMany()
-    console.log('passou 1')
     if (products.length === 0 || users.length === 0 || coupons.length === 0) {
         await prisma.userCart.create({
             data: 
@@ -158,7 +151,6 @@ const autoverif = async (req: Request, res: Response, next: NextFunction) => {
         ]
     })
     }
-    console.log('passei 2')
     return next()
 } catch(err) {
         return res.status(500).json({error: "internal server error"})
