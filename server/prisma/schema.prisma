@@ -46,11 +46,8 @@ model ProductInCart {
   userCartId Int
   product    Product  @relation(fields: [productId], references: [id])
   productId  Int
-  order      Order?   @relation(fields: [orderId], references: [id])
-  orderId    Int?
   quantity   Int      @default(1)
-  price      Float      @default(0)
-
+  price      Float    @default(0)
   @@id([userCartId, productId])
 }
 
@@ -58,7 +55,8 @@ model Order {
   id             Int             @id @default(autoincrement())
   userCart       UserCart        @relation(fields: [userCartId], references: [id])
   userCartId     Int             
-  productsInCart ProductInCart[]
+  receipt        String
+  totalCost      Float
   status         String
 }
 

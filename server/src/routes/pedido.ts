@@ -4,11 +4,7 @@ import {auth} from '../auth'
 import prisma from '../db/prisma'
 OrderRouter.post('/', auth, async (req, res) => {
     try {
-    const productsInCart = await prisma.productInCart.findMany({
-        where: {
-            orderId: null
-        }
-    })
+    const productsInCart = await prisma.productInCart.findMany()
     if (productsInCart.length === 0) {
         return res.status(404).json({error:"There are no products in your cart that aren't already related to an order."})
     }
@@ -44,21 +40,24 @@ OrderRouter.post('/', auth, async (req, res) => {
      }) )}
     )
     console.log("foi aqui 3.")
+    let tc = 0
+    for (let x of productsInCart) {
+        tc+=x.price
+    }
+    let receipt = ""
+    for (let x of productsInCart) {
+        receipt.concat(JSON.stringify(x).toString()+", ")
+    }
     const order = await prisma.order.create({
         data: {
             userCartId: parseInt(res.locals.verify.id),
-            status: "pendente"
+            status: "pendente",
+            totalCost: tc,
+            receipt: receipt
         }
     })
     console.log("foi aqui 4.")
-    await prisma.productInCart.updateMany({
-        where: {
-            orderId: null 
-        },
-        data: {
-            orderId: order.id
-        }
-    })
+    await prisma.productInCart.deleteMany()
     console.log("foi aqui 5?")
     return res.status(201).json({message: "Order successfully created."})
 } catch(err) {

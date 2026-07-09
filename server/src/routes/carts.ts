@@ -9,7 +9,7 @@ if (!secretkey) throw Error(".env: couldn't load secretkey properly.")
 
 const where = (userId: number, productId: number) => {
     return {
-        userCartId_productId : {
+        userCartId_productId: {
             userCartId : userId,
             productId : productId
         }
@@ -31,14 +31,10 @@ CartsRouter.get("/", auth, async ( req : Request, res : Response) => {
         const products = await prisma.productInCart.findMany({
             where: {
                 userCartId: uid,
-                orderId: null
             }
         })
         
         const total = await prisma.productInCart.aggregate({
-            where: {
-                orderId: null
-            },
             _sum: {
                 price: true
             }
@@ -89,8 +85,7 @@ CartsRouter.post("/items", auth, async ( req : Request, res : Response) => {
                 userCartId_productId: {
                     userCartId: userId,
                     productId: productId
-                },
-                orderId: null
+                }
             },
             update : {
                 quantity : { increment : 1 },
@@ -114,71 +109,6 @@ CartsRouter.post("/items", auth, async ( req : Request, res : Response) => {
     }
 })
 
-CartsRouter.post("/purchase", auth, async (req: Request, res: Response) => {
-    try {
-        const userId = res.locals.verify.id
-        const productId = req.body.id
-        const cartProduct = await prisma.productInCart.findUnique(
-            {
-                where: where(userId, productId)
-            }
-        )
-        if (!cartProduct) {
-            return res.status(404).json({error:"Product could not be found in your cart."})
-        }
-        const user = await prisma.userCart.findUnique({
-            where: {
-                id: userId
-            }, 
-            omit: {password: true}
-        })
-        if (!user) {
-            return res.status(401).json({error:"not authorized"})
-        }
-        const product = await prisma.product.findUnique({
-            where: {
-                id: productId
-            }
-        })
-        if (!product) {
-            return res.status(404).json({error:"Product could not be found."})
-        }
-        if (product.price > user.tokens) {
-            return res.status(403).send("Not enough tokens.")
-        }
-        if (product.stock < cartProduct.quantity) {
-            return res.status(403).send("Out of stock.")
-        }
-        await prisma.$transaction([  
-            prisma.userCart.update({
-                where: {
-                    id: userId
-                },
-                data: {
-                    tokens: {increment: product.price}
-                }
-            }),
-            prisma.userCart.update({
-                where: {
-                    id: userId
-                },
-                data: {
-                    tokens: {decrement: product.price}
-                }
-            }),
-            prisma.product.update({
-                where: {
-                    id: productId
-                },
-                data: {
-                    stock: {decrement: cartProduct.quantity}
-                }
-            })
-        ])
-    } catch(err) {
-        return res.status(500).json({error: "Internal server error"})
-    }
-})
 
 CartsRouter.patch("/items/:id", auth, async ( req : Request, res : Response) => {
     try{
@@ -257,9 +187,6 @@ CartsRouter.post('/cupom', async (req, res) => {
     await prisma.$transaction(async (prisma) => {
         [   
             await prisma.productInCart.updateMany({
-                where: {
-                    orderId: null,
-                },
                 data: {
                     price: {
                         multiply: multiplier
