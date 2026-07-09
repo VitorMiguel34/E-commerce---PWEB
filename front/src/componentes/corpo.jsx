@@ -35,18 +35,18 @@ const produtos = [
     <main className="corpo-container">
 
       <div className="banner">
-        <h1>As camisas mais incriveis do futebol</h1>
-        <p>Estilo e paixao para todos</p>
+        <h1>As camisas melhores camisas do futebol</h1>
+        <p>Estilo e paixão para todos</p>
       </div>
 
       <section className="sobre">
         <h2>Sobre a loja</h2>
         <p>
-          feita para os verdadeiros fans de futebol 
+          feita para os verdadeiros fãs de futebol 
         </p>
       </section>
 
-      <h2 className="titulo-secao">Lancamentos</h2>
+      <h2 className="titulo-secao">Lançamentos</h2>
 
       <div className="carrossel">
 
@@ -71,7 +71,7 @@ const produtos = [
       </div>
 
       <div className="vantagens-container">
-        <div className="vantagem-item">Frete gratis</div>
+        <div className="vantagem-item">Frete grátis</div>
         <div className="vantagem-item">Pague no pix</div>
         <div className="vantagem-item">Compra segura</div>
       </div>
