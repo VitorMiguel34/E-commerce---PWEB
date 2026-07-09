@@ -16,7 +16,7 @@ const where = (userId: number, productId: number) => {
     }
 }
 
-CartsRouter.get("/all", adminAuth, async ( req : Request, res : Response) => {
+CartsRouter.get("/all", auth, async ( req : Request, res : Response) => {
     try{
         const products = await prisma.productInCart.findMany()
         return res.status(200).json(products)
@@ -85,7 +85,13 @@ CartsRouter.post("/items", auth, async ( req : Request, res : Response) => {
         }
         console.log('teste2')
         const product = await prisma.productInCart.upsert({
-            where : where(userId, productId),
+            where : {
+                userCartId_productId: {
+                    userCartId: userId,
+                    productId: productId
+                },
+                orderId: null
+            },
             update : {
                 quantity : { increment : 1 },
                 price: {
@@ -203,7 +209,11 @@ CartsRouter.patch("/items/:id", auth, async ( req : Request, res : Response) => 
 
 CartsRouter.delete('/', async (req, res) => {
     try {
-        await prisma.productInCart.deleteMany()
+        await prisma.productInCart.deleteMany({
+            where: {
+                userCartId: res.locals.verify.id
+            }
+        })
         return res.json({message: "Product deleted"})
     } catch(err) {
         return res.status(500).json({error: "internal server error"})
@@ -234,31 +244,37 @@ CartsRouter.post('/cupom', async (req, res) => {
     try {
     const recentCoupon = await prisma.coupon.findUnique({
         where: {
-            id: res.locals.verify.id,
+            id: req.body.id,
             used: false
         }
     })
     if (!recentCoupon) {
-        return res.status(404).json({error:"Inexistente/already used coupon."})
+        return res.status(404).json({error:"Inexistent/already used coupon."})
     }
-    const multiplier = (1-recentCoupon.discount/100)
-    await prisma.productInCart.updateMany({
-        where: {
-            orderId: null,
-        },
-        data: {
-            price: {
-                multiply: multiplier
-            }
-        }
-    })
-    await prisma.coupon.update({
-        where: {
-            id: parseInt(req.body.id)
-        },
-        data: {
-            used: true
-        }
+    console.log(recentCoupon.discount)
+    const multiplier = (1-(recentCoupon.discount/100))
+    console.log(multiplier)
+    await prisma.$transaction(async (prisma) => {
+        [   
+            await prisma.productInCart.updateMany({
+                where: {
+                    orderId: null,
+                },
+                data: {
+                    price: {
+                        multiply: multiplier
+                    }
+                }
+            }),
+            await prisma.coupon.update({
+                where: {
+                    id: parseInt(req.body.id)
+                },
+                data: {
+                    used: true
+                }
+            })
+        ]
     })
     return res.json({message: "Coupon applied."})
 }catch(err) {

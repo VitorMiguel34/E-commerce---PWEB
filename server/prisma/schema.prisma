@@ -49,7 +49,7 @@ model ProductInCart {
   order      Order?   @relation(fields: [orderId], references: [id])
   orderId    Int?
   quantity   Int      @default(1)
-  price      Int      @default(0)
+  price      Float      @default(0)
 
   @@id([userCartId, productId])
 }

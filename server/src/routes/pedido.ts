@@ -9,7 +9,7 @@ OrderRouter.post('/', auth, async (req, res) => {
             orderId: null
         }
     })
-    if (!productsInCart) {
+    if (productsInCart.length === 0) {
         return res.status(404).json({error:"There are no products in your cart that aren't already related to an order."})
     }
     console.log("foi aqui.")

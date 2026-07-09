@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken'
 import prisma from './db/prisma'
+import bcrypt from 'bcrypt'
 import { Request, Response, NextFunction } from 'express'
 
 const secretkey = process.env.KEY
@@ -86,11 +87,12 @@ const autoverif = async (req: Request, res: Response, next: NextFunction) => {
     const products = await prisma.product.findMany()
     const users = await prisma.userCart.findMany()
     if (products.length === 0 || users.length === 0 || coupons.length === 0) {
+        let pass = await bcrypt.hash("senha",10)
         await prisma.userCart.create({
             data: 
                 {
                     email: "user@gmail.com",
-                    password: "Oi",
+                    password: pass,
                     name: "user1"
                 }
         })
