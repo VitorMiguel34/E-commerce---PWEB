@@ -91,12 +91,7 @@ UsersRouter.post('/', inverseAuth, async (req : Request, res : Response) => {
           password: hashpassword
         }
       })
-      res.cookie("sessiontoken", jwt.sign({id : user.id}, secretkey), {
-        httpOnly: true,
-        sameSite: "strict",
-        maxAge: 60*60*24*3
-      })
-      return res.status(201).json({message: "User created!"})
+      return res.status(201).json({message: "User created!", token: jwt.sign({id: user.id}, secretkey)})
     } catch(err) {
       if (!isValid) {
         return res.status(500).json({error:"Could not store password safely."})
@@ -118,14 +113,9 @@ UsersRouter.post('/login', inverseAuth, async(req : Request, res : Response) => 
       if (!isPasswordValid) {
         return res.status(401).json({erro: "Incorrect credentials."})
       }
-      res.cookie("sessiontoken", jwt.sign({id : user.id}, secretkey), {
-        httpOnly: true,
-        sameSite: "strict",
-        maxAge: 60*60*24*3
-      })
-      return res.status(200).send("User logged in successfully.")
+      return res.status(200).json({message:"User logged in successfully.", token: jwt.sign({id: user.id}, secretkey)})
     } catch(err) {
-      return res.status(500).json({erro: "Internal server error."})
+      return res.status(500).json({error: "Internal server error."})
     }
 })
 

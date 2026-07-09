@@ -19,10 +19,13 @@ app.use(cors())
 app.use(express.json())
 app.use(cookieparser())
 app.use('/api/users', UsersRouter)
-app.use('/produtos', autoverif, ProductsRouter)
-app.use('/carrinho', autoverif, CartsRouter)
-app.use('/cupom', autoverif, CouponRouter)
-app.use('/pedidos', autoverif, OrderRouter)
+app.use('/autoverif', autoverif, async (req: Request, res: Response) => {
+  return res.status(201).json({message: "Created dummy data successfully."})
+})
+app.use('/produtos', ProductsRouter)
+app.use('/carrinho', CartsRouter)
+app.use('/cupom', CouponRouter)
+app.use('/pedidos', OrderRouter)
 
 async function createAdmin(){
   const adminPassword : string = await bcrypt.hash(process.env.ADMIN_PASSWORD || "", 10) 
